@@ -12,6 +12,8 @@ GEMSPEC = Gem::Specification.load("rb_sys_repro.gemspec")
 
 RbSys::ExtensionTask.new("rb_sys_repro", GEMSPEC) do |ext|
   ext.lib_dir = "lib/rb_sys_repro"
+
+  ext.cross_compile = true
 end
 
 task build: %i[compile]
