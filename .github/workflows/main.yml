@@ -1,0 +1,39 @@
+name: Datafile Ruby
+
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Compile native gem for ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        platform: [x86_64-linux, arm64-darwin]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Set vars
+        id: vars
+        run: |
+          echo "RB_SYS_VERSION=$(bundle list | grep rb_sys | cut -d '(' -f2 | cut -d ')' -f1 | head -n1)" >> $GITHUB_OUTPUT
+
+      - uses: oxidize-rb/actions/cross-gem@v1
+        id: cross-gem
+        with:
+          platform: ${{ matrix.platform }}
+          tag: ${{ steps.vars.outputs.RB_SYS_VERSION }}
+          ruby-versions: "3.1,3.2"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cross-gem
+          path: ${{ steps.cross-gem.outputs.gem-path }}
