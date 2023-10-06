@@ -1,0 +1,13 @@
+[package]
+name = "rb_sys_repro"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hayden Ball <hayden@playerdata.com>"]
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+magnus = { version = "0.6" }
