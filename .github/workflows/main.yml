@@ -26,12 +26,19 @@ jobs:
         run: |
           echo "RB_SYS_VERSION=$(bundle list | grep rb_sys | cut -d '(' -f2 | cut -d ')' -f1 | head -n1)" >> $GITHUB_OUTPUT
 
-      - uses: oxidize-rb/actions/cross-gem@v1.1.8
+      - name: Build gem
         id: cross-gem
-        with:
-          tag: ${{ steps.vars.outputs.RB_SYS_VERSION }}
-          platform: ${{ matrix.platform }}
-          ruby-versions: "3.1.4, 3.2.2"
+        shell: bash
+        run: |
+          rm -rf target tmp
+
+          bundle exec rb-sys-dock \
+            --platform ${{ matrix.platform }} \
+            --tag ${{ steps.vars.outputs.RB_SYS_VERSION }} \
+            --ruby-versions 3.1.4,3.2.2 -- \
+            ls -al && unset RAKE_EXTENSION_TASK_NO_NATIVE && bundle exec rake native gem
+
+          echo "gem-path=$(find ./pkg -name '*-${{ matrix.platform }}.gem')" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v2
         with:
