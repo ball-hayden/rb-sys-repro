@@ -10,31 +10,25 @@ jobs:
     name: Compile native gem for ${{ matrix.platform }}
     runs-on: ubuntu-latest
 
+    container:
+      image: rbsys/${{ matrix.platform }}:latest
+
     strategy:
       matrix:
-        platform: [x86_64-linux, arm64-darwin]
+        platform: [x86_64-linux]
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
-      - name: Set vars
-        id: vars
-        run: |
-          echo "RB_SYS_VERSION=$(bundle list | grep rb_sys | cut -d '(' -f2 | cut -d ')' -f1 | head -n1)" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v2
 
       - name: Build gem
         id: cross-gem
         shell: bash
         run: |
-          bundle exec rb-sys-dock \
-            --platform ${{ matrix.platform }} \
-            --tag ${{ steps.vars.outputs.RB_SYS_VERSION }} \
-            --ruby-versions 3.1.4,3.2.2 -- \
-            unset RAKE_EXTENSION_TASK_NO_NATIVE && bundle exec rake native gem
+          unset RAKE_EXTENSION_TASK_NO_NATIVE
+          export RUBY_CC_VERSION=3.1.4,3.2.2
+
+          bundle
+          bundle exec rake native gem
 
           echo "gem-path=$(find ./pkg -name '*-${{ matrix.platform }}.gem')" >> $GITHUB_OUTPUT
 
